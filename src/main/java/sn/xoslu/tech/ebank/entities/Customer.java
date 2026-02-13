@@ -19,8 +19,7 @@ public class Customer extends BaseEntity {
     private Long id;
     private String name;
     private String email;
-    @Column(columnDefinition = "bit not null default 1")
-    private boolean state = true;
+    private boolean state;
     @OneToMany(mappedBy = "customer")
     private List<Account> accounts;
 }

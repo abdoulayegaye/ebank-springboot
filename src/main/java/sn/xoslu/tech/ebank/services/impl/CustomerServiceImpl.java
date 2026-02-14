@@ -12,6 +12,7 @@ import sn.xoslu.tech.ebank.exceptions.NotFoundException;
 import sn.xoslu.tech.ebank.mappers.CustomerMapper;
 import sn.xoslu.tech.ebank.repositories.CustomerRepository;
 import sn.xoslu.tech.ebank.services.CustomerService;
+import sn.xoslu.tech.ebank.utils.Tools;
 
 import java.util.List;
 
@@ -34,6 +35,7 @@ public class CustomerServiceImpl implements CustomerService {
         }
         Customer c = customerMapper.toEntity(customer);
         c.setState(true);
+        Tools.validateEmail(customer.getEmail());
         return customerMapper.toDTO(customerRepository.save(c));
     }
 

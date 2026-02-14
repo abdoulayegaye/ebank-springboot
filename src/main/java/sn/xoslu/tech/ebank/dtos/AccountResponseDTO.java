@@ -4,8 +4,6 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sn.xoslu.tech.ebank.entities.Account;
-import sn.xoslu.tech.ebank.enums.TypeOperation;
 
 import java.time.Instant;
 
@@ -13,11 +11,11 @@ import java.time.Instant;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
-public class OperationDTO {
+public class AccountResponseDTO {
     private Long id;
     private String numero;
-    private Instant dateOperation;
-    private TypeOperation type;
-    private double amount;
-    private AccountResponseDTO account;
+    private Instant createdAt;
+    private double balance;
+    private boolean active;
+    private CustomerDTO owner;
 }

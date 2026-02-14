@@ -4,7 +4,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import sn.xoslu.tech.ebank.entities.Customer;
+
+import java.time.Instant;
 
 @Getter
 @Setter
@@ -13,7 +14,8 @@ import sn.xoslu.tech.ebank.entities.Customer;
 public class AccountDTO {
     private Long id;
     private String numero;
+    private Instant createdAt;
     private double balance;
-    private boolean active = true;
-    private Customer customer;
+    private boolean active;
+    private Long customerId;
 }

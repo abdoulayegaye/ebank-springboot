@@ -1,16 +1,14 @@
 package sn.xoslu.tech.ebank.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.xoslu.tech.ebank.dtos.ApiResponse;
 import sn.xoslu.tech.ebank.dtos.CustomerDTO;
-import sn.xoslu.tech.ebank.entities.Customer;
 import sn.xoslu.tech.ebank.services.CustomerService;
 
 import java.util.List;
@@ -18,10 +16,12 @@ import java.util.List;
 @RestController
 @RequestMapping("/customers")
 @RequiredArgsConstructor
+@Tag(name = "Gestion des clients", description = "Donne toutes les opérations qui sont liées á la gestion des clients")
 public class CustomerController {
     private final CustomerService customerService;
 
     @PostMapping
+    @Operation(description = "Créer client", summary = "Créer client")
     public ResponseEntity<ApiResponse<CustomerDTO>> create(@RequestBody CustomerDTO customer) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -33,6 +33,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
+    @Operation(description = "Récupérer client via ID", summary = "Récupérer client")
     public ResponseEntity<ApiResponse<CustomerDTO>> getById(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -44,6 +45,7 @@ public class CustomerController {
     }
 
     @GetMapping("/pagined")
+    @Operation(description = "Liste paginée de tous les clients", summary = "Lister tous les clients")
     public ResponseEntity<ApiResponse<Page<CustomerDTO>>> getAllPagined(
             @RequestParam(defaultValue = "1") int page,
             @RequestParam(defaultValue = "10") int size,
@@ -60,6 +62,7 @@ public class CustomerController {
     }
 
     @GetMapping
+    @Operation(description = "Lister tous les clients", summary = "Lister tous les clients")
     public ResponseEntity<ApiResponse<List<CustomerDTO>>> getAll() {
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -71,6 +74,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
+    @Operation(description = "Modifier client", summary = "Modifier client")
     public ResponseEntity<ApiResponse<CustomerDTO>> update(
             @PathVariable Long id,
             @RequestBody CustomerDTO customer) {
@@ -85,6 +89,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
+    @Operation(description = "Supprimer client", summary = "Supprimer client")
     public ResponseEntity<ApiResponse<CustomerDTO>> delete(@PathVariable Long id) {
         customerService.deleteCustomer(id);
         return ResponseEntity

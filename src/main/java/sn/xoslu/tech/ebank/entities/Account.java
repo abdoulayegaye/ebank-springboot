@@ -1,5 +1,7 @@
 package sn.xoslu.tech.ebank.entities;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -19,8 +21,7 @@ public class Account extends BaseEntity {
     private Long id;
     private String numero;
     private double balance;
-    @Column(columnDefinition = "bit not null default 1")
-    private boolean active = true;
+    private boolean active;
     @ManyToOne
     private Customer customer;
     @OneToMany(mappedBy = "account")

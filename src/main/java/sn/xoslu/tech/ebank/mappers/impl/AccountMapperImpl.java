@@ -26,6 +26,7 @@ public class AccountMapperImpl implements AccountMapper {
         AccountDTO dto = new AccountDTO();
         dto.setId(account.getId());
         dto.setNumero(account.getNumero());
+        dto.setCurrency(account.getCurrency());
         dto.setCreatedAt(account.getCreatedAt());
         dto.setBalance(account.getBalance());
         dto.setActive(account.isActive());
@@ -41,6 +42,7 @@ public class AccountMapperImpl implements AccountMapper {
         AccountResponseDTO dto = new AccountResponseDTO();
         dto.setId(account.getId());
         dto.setNumero(account.getNumero());
+        dto.setCurrency(account.getCurrency());
         dto.setCreatedAt(account.getCreatedAt());
         dto.setBalance(account.getBalance());
         dto.setActive(account.isActive());

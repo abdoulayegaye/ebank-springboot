@@ -23,7 +23,7 @@ public class Tools {
                 throw new ConflictException(String.format(ERROR_INVALID_FORMAT, trimmedEmail));
             }
         } catch (RuntimeException e) {
-            throw new InternalServerException(String.format(ERROR_INVALID_FORMAT, trimmedEmail));
+            throw new ConflictException(String.format(ERROR_INVALID_FORMAT, trimmedEmail));
         }
     }
 }

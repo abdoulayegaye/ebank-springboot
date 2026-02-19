@@ -38,7 +38,7 @@ public class OperationController {
     }
 
     @PostMapping("/withdraw")
-    @Operation(summary = "retrait", description = "Retrait")
+    @Operation(summary = "Retrait", description = "Retrait")
     public ResponseEntity<ApiResponse<Void>> withdraw(
             @RequestParam String accountNumber,
             @RequestParam double amount) {

@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sn.xoslu.tech.ebank.dtos.ApiResponse;
 import sn.xoslu.tech.ebank.dtos.CustomerDTO;
@@ -63,6 +64,8 @@ public class CustomerController {
 
     @GetMapping
     @Operation(description = "Lister tous les clients", summary = "Lister tous les clients")
+    @PreAuthorize("hasRole('USER')")
+    //@PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<ApiResponse<List<CustomerDTO>>> getAll() {
         return ResponseEntity
                 .status(HttpStatus.OK)

@@ -16,6 +16,7 @@ public class AccountDTO {
     private String numero;
     private Instant createdAt;
     private double balance;
+    private String currency;
     private boolean active;
     private Long customerId;
 }

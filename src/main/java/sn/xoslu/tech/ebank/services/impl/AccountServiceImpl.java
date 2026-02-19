@@ -32,6 +32,7 @@ public class AccountServiceImpl implements AccountService {
         Customer customer = customerMapper.toEntity(customerService.getCustomerById(accountDTO.getCustomerId()));
         Account account = accountMapper.toEntity(accountDTO);
         account.setNumero(UUID.randomUUID().toString());
+        account.setCurrency("XOF");
         account.setActive(true);
         account.setCustomer(customer);
         Account savedAccount = accountRepository.save(account);

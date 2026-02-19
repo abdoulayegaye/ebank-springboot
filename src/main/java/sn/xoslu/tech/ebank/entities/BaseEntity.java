@@ -3,7 +3,9 @@ package sn.xoslu.tech.ebank.entities;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
+import org.springframework.security.core.context.SecurityContextHolder;
 
 import java.time.Instant;
 
@@ -13,6 +15,7 @@ import java.time.Instant;
 public class BaseEntity {
 
     @Column(name = "created_at")
+    @CreationTimestamp
     private Instant createdAt = Instant.now();
 
     @Temporal(TemporalType.TIMESTAMP)
@@ -26,7 +29,7 @@ public class BaseEntity {
     @Column(name = "user_updated")
     private String userUpdated;
 
-    /*@PreUpdate
+    @PreUpdate
     public void preUpdate() {
         try {
             String username = SecurityContextHolder.getContext().getAuthentication().getName();
@@ -48,5 +51,5 @@ public class BaseEntity {
         } catch (Exception e){
             System.out.println("ERROR");
         }
-    }*/
+    }
 }

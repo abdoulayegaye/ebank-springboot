@@ -56,7 +56,23 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.UNAUTHORIZED);
     }
 
-    // UNAUTHORIZED
+    // FORBIDEN
+    @ExceptionHandler(ForbidenException.class)
+    public ResponseEntity<ApiError> handleForbiden(
+            ForbidenException ex,
+            HttpServletRequest request) {
+
+        ApiError error = new ApiError(
+                HttpStatus.FORBIDDEN.value(),
+                "FORBIDEN",
+                ex.getMessage(),
+                request.getRequestURI()
+        );
+
+        return new ResponseEntity<>(error, HttpStatus.FORBIDDEN);
+    }
+
+    // CONFLICT
     @ExceptionHandler(ConflictException.class)
     public ResponseEntity<ApiError> handleConflict(
             ConflictException ex,

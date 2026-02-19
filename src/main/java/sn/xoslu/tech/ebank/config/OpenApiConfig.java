@@ -33,7 +33,15 @@ public class OpenApiConfig {
                                 - Les comptes bancaires
                                 - Les opérations (dépôt, retrait, virement)
 
-                                Projet réalisé avec Spring Boot & OpenAPI.
+                                Projet réalisé avec les outils et technos suivants :
+                                - Java
+                                - Spring Boot
+                                - Spring Security / JWT / OAuth2 / OIDC / Keycloak
+                                - Spring Data JPA
+                                - OpenAPI / Swagger
+                                - Git
+                                - GitLab
+                                - Docker
                                 """)
                         .termsOfService("https://banking.com/terms")
 
@@ -53,7 +61,7 @@ public class OpenApiConfig {
                 .servers(List.of(
 
                         new Server()
-                                .url("http://localhost:8080")
+                                .url("http://localhost:8080/api/v1")
                                 .description("Local DEV Server"),
 
                         new Server()

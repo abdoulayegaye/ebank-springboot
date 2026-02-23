@@ -13,4 +13,6 @@ public interface CustomerService {
     CustomerDTO updateCustomer(Long id, CustomerDTO customer);
     void deleteCustomer(Long id);
     void changeState(Long id, boolean state);
+    boolean emailExists(String email);
+    List<CustomerDTO> search(String query);
 }

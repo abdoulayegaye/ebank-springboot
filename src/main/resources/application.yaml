@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: ebank
+
+  datasource:
+    url: jdbc:mysql://localhost:3306/ebank_db
+    username: root
+    password:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: update
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQL8Dialect
+
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: ebank-client
+            client-secret: 8bal2MonsBJaSCyoeA5vULy7xPzelh41
+            scope: openid, profile, email
+            authorization-grant-type: authorization_code
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/ebank-realm
+            user-name-attribute: preferred_username
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/ebank-realm
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api/v1
+
+springdoc:
+  api-docs:
+    path: /v3/api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    persist-authorization: true

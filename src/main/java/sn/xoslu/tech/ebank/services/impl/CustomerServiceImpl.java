@@ -7,16 +7,14 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sn.xoslu.tech.ebank.dtos.CustomerDTO;
 import sn.xoslu.tech.ebank.entities.Customer;
-import sn.xoslu.tech.ebank.exceptions.BadRequestException;
+import sn.xoslu.tech.ebank.exceptions.ConflictException;
 import sn.xoslu.tech.ebank.exceptions.NotFoundException;
 import sn.xoslu.tech.ebank.mappers.CustomerMapper;
 import sn.xoslu.tech.ebank.repositories.CustomerRepository;
 import sn.xoslu.tech.ebank.services.CustomerService;
 import sn.xoslu.tech.ebank.utils.Tools;
 
-import javax.tools.Tool;
 import java.util.List;
-
 
 @Service
 public class CustomerServiceImpl implements CustomerService {
@@ -32,7 +30,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDTO createCustomer(CustomerDTO customer) {
         if (customerRepository.existsByEmail(customer.getEmail())) {
-            throw new BadRequestException("Un client avec cet email existe déjà");
+            throw new ConflictException("Un client avec cet email existe déjà");
         }
         Customer c = customerMapper.toEntity(customer);
         c.setState(true);
@@ -86,5 +84,24 @@ public class CustomerServiceImpl implements CustomerService {
         Customer c = customerMapper.toEntity(customer);
         c.setState(state);
         customerRepository.save(c);
+    }
+
+    @Override
+    public boolean emailExists(String email) {
+        return customerRepository.existsByEmail(email);
+    }
+
+    @Override
+    public List<CustomerDTO> search(String query) {
+        if (query == null || query.trim().isEmpty()) {
+            return customerRepository.findAll()
+                    .stream()
+                    .map(customer -> customerMapper.toDTO(customer))
+                    .toList();
+        }
+        return customerRepository.search(query.trim())
+                .stream()
+                .map(customer -> customerMapper.toDTO(customer))
+                .toList();
     }
 }

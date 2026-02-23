@@ -9,7 +9,6 @@ import sn.xoslu.tech.ebank.entities.User;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Getter
 public class UserInfoUserDetails implements UserDetails {

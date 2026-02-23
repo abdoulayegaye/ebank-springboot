@@ -21,7 +21,8 @@ public class Account extends BaseEntity {
     private Long id;
     private String numero;
     private double balance;
-    private String currency = "XOF";
+    @Column(columnDefinition = "varchar(255) not null default 'XOF'")
+    private String currency;
     private boolean active;
     @ManyToOne
     private Customer customer;

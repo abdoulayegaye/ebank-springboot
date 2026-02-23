@@ -2,6 +2,7 @@ package sn.xoslu.tech.ebank.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
@@ -23,7 +24,7 @@ public class CustomerController {
 
     @PostMapping
     @Operation(description = "Créer client", summary = "Créer client")
-    public ResponseEntity<ApiResponse<CustomerDTO>> create(@RequestBody CustomerDTO customer) {
+    public ResponseEntity<ApiResponse<CustomerDTO>> create(@RequestBody @Valid CustomerDTO customer) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
                 .body(new ApiResponse<>(
@@ -64,7 +65,7 @@ public class CustomerController {
 
     @GetMapping
     @Operation(description = "Lister tous les clients", summary = "Lister tous les clients")
-    @PreAuthorize("hasRole('USER')")
+    //@PreAuthorize("hasRole('USER')")
     //@PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<ApiResponse<List<CustomerDTO>>> getAll() {
         return ResponseEntity
@@ -101,6 +102,34 @@ public class CustomerController {
                         HttpStatus.OK.value(),
                         "Client modifié avec succès.",
                         null
+                ));
+    }
+
+    @GetMapping("/check-email")
+    @Operation(description = "Vérifier si email existe", summary = "Vérifier si email existe")
+    public ResponseEntity<ApiResponse<?>> checkEmail(@RequestParam String email) {
+        boolean exists = customerService.emailExists(email);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse<>(
+                        HttpStatus.OK.value(),
+                        "Vérification Email effectuée avec succès.",
+                        exists
+                ));
+    }
+
+    @GetMapping("/search")
+    @Operation(description = "Rechercher client via un parametre", summary = "Rechercher client via un parametre")
+    public ResponseEntity<ApiResponse<List<CustomerDTO>>> search(
+            @RequestParam(value = "q", defaultValue = "") String query
+    ) {
+        List<CustomerDTO> results = customerService.search(query);
+        return ResponseEntity
+                .status(HttpStatus.OK)
+                .body(new ApiResponse<>(
+                        HttpStatus.OK.value(),
+                        "Liste des clients trouvés avec succès.",
+                        results
                 ));
     }
 }

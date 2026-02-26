@@ -1,7 +1,6 @@
 package sn.xoslu.tech.ebank.services;
 
 import sn.xoslu.tech.ebank.dtos.OperationDTO;
-import sn.xoslu.tech.ebank.entities.Operation;
 
 import java.util.List;
 

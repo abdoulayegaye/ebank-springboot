@@ -12,6 +12,7 @@ import sn.xoslu.tech.ebank.exceptions.NotFoundException;
 import sn.xoslu.tech.ebank.mappers.CustomerMapper;
 import sn.xoslu.tech.ebank.repositories.CustomerRepository;
 import sn.xoslu.tech.ebank.services.CustomerService;
+import sn.xoslu.tech.ebank.utils.PageResponse;
 import sn.xoslu.tech.ebank.utils.Tools;
 
 import java.util.List;
@@ -47,15 +48,6 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public Page<CustomerDTO> getAllCustomersPagined(int page, int size, String sortBy, String sortOrder) {
-        int _page = page <= 1 ? 0 : page;
-        int _size = size <= 0 ? 10 : Math.min(size, 100);
-        Sort sort = sortOrder.equalsIgnoreCase(Sort.Direction.ASC.name()) ? Sort.by(sortBy).ascending() : Sort.by(sortBy).descending();
-        Pageable pageable = PageRequest.of(_page, _size, sort);
-        return customerMapper.toDTOPage(customerRepository.getCustomers(pageable));
-    }
-
-    @Override
     public List<CustomerDTO> getAllCustomers() {
         return customerMapper.toDTOList(customerRepository.findAll());
     }
@@ -67,7 +59,7 @@ public class CustomerServiceImpl implements CustomerService {
         existing.setName(customer.getName());
         existing.setEmail(customer.getEmail());
 
-        return customerMapper.toDTO(customerRepository.save(customerMapper.toEntity(customer)));
+        return customerMapper.toDTO(customerRepository.save(customerMapper.toEntity(existing)));
     }
 
     @Override
@@ -92,16 +84,24 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public List<CustomerDTO> search(String query) {
-        if (query == null || query.trim().isEmpty()) {
-            return customerRepository.findAll()
-                    .stream()
-                    .map(customer -> customerMapper.toDTO(customer))
-                    .toList();
-        }
-        return customerRepository.search(query.trim())
-                .stream()
-                .map(customer -> customerMapper.toDTO(customer))
-                .toList();
+    public PageResponse<CustomerDTO> searchWithPagination(
+            String query,
+            int page,
+            int size,
+            String sortBy,
+            String sortDir
+    ) {
+        Sort sort = sortDir.equalsIgnoreCase("desc")
+                ? Sort.by(sortBy).descending()
+                : Sort.by(sortBy).ascending();
+
+        Pageable pageable = PageRequest.of(page, size, sort);
+
+        // Si query vide → retourne tout
+        String q = (query == null || query.trim().isEmpty()) ? "" : query.trim();
+
+        Page<Customer> result = customerRepository.searchWithPagination(q, pageable);
+
+        return customerMapper.toPageResponse(result);
     }
 }

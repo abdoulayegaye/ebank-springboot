@@ -5,6 +5,7 @@ import org.springframework.stereotype.Service;
 import sn.xoslu.tech.ebank.dtos.CustomerDTO;
 import sn.xoslu.tech.ebank.entities.Customer;
 import sn.xoslu.tech.ebank.mappers.CustomerMapper;
+import sn.xoslu.tech.ebank.utils.PageResponse;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -49,5 +50,23 @@ public class CustomerMapperImpl implements CustomerMapper {
         }
 
         return customers.map(this::toDTO);
+    }
+
+    @Override
+    public PageResponse<CustomerDTO> toPageResponse(Page<Customer> page) {
+        if (page == null) return null;
+
+        return PageResponse.<CustomerDTO>builder()
+                .content(page.getContent()
+                        .stream()
+                        .map(this::toDTO)
+                        .toList())
+                .page(page.getNumber())
+                .size(page.getSize())
+                .totalElements(page.getTotalElements())
+                .totalPages(page.getTotalPages())
+                .first(page.isFirst())
+                .last(page.isLast())
+                .build();
     }
 }

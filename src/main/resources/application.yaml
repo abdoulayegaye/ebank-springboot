@@ -48,3 +48,8 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     persist-authorization: true
+
+app:
+  jwt:
+    secret: ${JWT_SECRET:YS1zdHJpbmctc2VjcmV0LWF0LWxlYXN0LTI1Ni1iaXRzLWxvbmc=}
+    expiration: ${JWT_EXPIRATION:1800000}  # 30 minutes par défaut (1000*60*30)

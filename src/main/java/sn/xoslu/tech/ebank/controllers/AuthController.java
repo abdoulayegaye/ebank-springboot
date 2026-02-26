@@ -24,6 +24,7 @@ public class AuthController {
     private final AuthenticationManager authenticationManager;
 
     @PostMapping
+    @Operation(summary = "Authentification", description = "Authentification")
     public AuthResponse authenticateAndGetToken(@RequestBody AuthRequest authRequest) {
         log.info("auth request : {}", authRequest);
         Authentication authentication = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(authRequest.getUsername(), authRequest.getPassword()));

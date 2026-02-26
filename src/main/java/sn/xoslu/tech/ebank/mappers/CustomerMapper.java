@@ -3,6 +3,7 @@ package sn.xoslu.tech.ebank.mappers;
 import org.springframework.data.domain.Page;
 import sn.xoslu.tech.ebank.dtos.CustomerDTO;
 import sn.xoslu.tech.ebank.entities.Customer;
+import sn.xoslu.tech.ebank.utils.PageResponse;
 
 import java.util.List;
 
@@ -11,4 +12,5 @@ public interface CustomerMapper {
     Customer toEntity(CustomerDTO dto);
     List<CustomerDTO> toDTOList(List<Customer> customers);
     Page<CustomerDTO> toDTOPage(Page<Customer> customers);
+    PageResponse<CustomerDTO> toPageResponse(Page<Customer> page);
 }

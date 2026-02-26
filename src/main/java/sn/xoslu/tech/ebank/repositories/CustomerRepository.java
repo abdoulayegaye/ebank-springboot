@@ -13,13 +13,14 @@ import java.util.Optional;
 public interface CustomerRepository extends JpaRepository<Customer, Long> {
     Optional<Customer> findByEmail(String email);
     boolean existsByEmail(String email);
-    @Query("SELECT DISTINCT u FROM Customer u")
-    Page<Customer> getCustomers(Pageable pageable);
     @Query("""
         SELECT c FROM Customer c
         WHERE LOWER(c.name)  LIKE LOWER(CONCAT('%', :query, '%'))
         OR    LOWER(c.email) LIKE LOWER(CONCAT('%', :query, '%'))
         OR    CAST(c.id AS string) LIKE CONCAT('%', :query, '%')
     """)
-    List<Customer> search(@Param("query") String query);
+    Page<Customer> searchWithPagination(
+            @Param("query") String query,
+            Pageable pageable
+    );
 }

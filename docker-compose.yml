@@ -1,87 +1,49 @@
 services:
 
-  # =========================
-  # MYSQL DATABASE
-  # =========================
   mysql:
     image: mysql:8.0
-    container_name: mysql-keycloak
-    restart: always
+    container_name: ebank-mysql
     environment:
-      MYSQL_DATABASE: keycloak_db
-      MYSQL_USER: keycloak_user
-      MYSQL_PASSWORD: keycloak_pass
-      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: ebank_db
+      MYSQL_USER: ebank
+      MYSQL_PASSWORD: ebank123
     ports:
       - "3307:3306"
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - banking-net
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
-
-  # =========================
-  # PHPMYADMIN
-  # =========================
   phpmyadmin:
-    image: phpmyadmin/phpmyadmin
-    platform: linux/amd64
-    container_name: phpmyadmin-keycloak
-    restart: always
+    image: phpmyadmin:latest
+    container_name: ebank-phpmyadmin
     environment:
       PMA_HOST: mysql
       PMA_PORT: 3306
-      MYSQL_ROOT_PASSWORD: root_pass
+      MYSQL_ROOT_PASSWORD: root
     ports:
-      - "8081:80"
+      - "8089:80"
     depends_on:
-      - mysql
-    networks:
-      - banking-net
+      mysql:
+        condition: service_healthy
 
-
-  # =========================
-  # KEYCLOAK
-  # =========================
-  keycloak:
-    image: quay.io/keycloak/keycloak:24.0.3
-    container_name: keycloak-banking
-    command: start-dev
-    restart: always
-
+  app:
+    image: layegaye/ebank:1.0.0  # ← utilise l'image Docker Hub au lieu de build
+    container_name: ebank-app
+    ports:
+      - "8088:8080"
     environment:
-      # Admin login
-      KEYCLOAK_ADMIN: admin
-      KEYCLOAK_ADMIN_PASSWORD: admin
-
-      # DB Config
-      KC_DB: mysql
-      KC_DB_URL: jdbc:mysql://mysql:3306/keycloak_db
-      KC_DB_USERNAME: keycloak_user
-      KC_DB_PASSWORD: keycloak_pass
-
-      # Host config
-      KC_HOSTNAME: localhost
-
-    ports:
-      - "8082:8080"
-
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:3306/ebank_db
+      SPRING_DATASOURCE_USERNAME: ebank
+      SPRING_DATASOURCE_PASSWORD: ebank123
+      SPRING_JPA_HIBERNATE_DDL_AUTO: update
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
 
-    networks:
-      - banking-net
-
-
-# =========================
-# VOLUMES
-# =========================
 volumes:
   mysql_data:
-
-
-# =========================
-# NETWORK
-# =========================
-networks:
-  banking-net:

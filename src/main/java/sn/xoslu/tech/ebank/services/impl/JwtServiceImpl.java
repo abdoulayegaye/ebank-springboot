@@ -6,10 +6,11 @@ import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
+import sn.xoslu.tech.ebank.config.JwtProperties;
 import sn.xoslu.tech.ebank.dtos.AuthResponse;
 import sn.xoslu.tech.ebank.mappers.UserMapper;
 import sn.xoslu.tech.ebank.repositories.UserRepository;
@@ -27,12 +28,16 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class JwtServiceImpl implements JwtService {
 
+    private final JwtProperties jwtProperties;
     private static final String BEARER = "Bearer ";
     private static final String AUTHORIZATION = "Authorization";
-    public static final String SECRET = "5367566B59703373367639792F423F4528482B4D6251655468576D5A71347437";
     private final UserRepository userRepository;
     private final UserInfoUserDetailsService userDetailsService;
     private final UserMapper userMapper;
+    /*@Value("${app.jwt.secret}")
+    private String secret;
+    @Value("${app.jwt.expiration}")
+    private int expiration;*/
 
     public String extractUsername(String token) {
         return extractClaim(token, Claims::getSubject);
@@ -45,11 +50,6 @@ public class JwtServiceImpl implements JwtService {
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
         final Claims claims = extractAllClaims(token);
         return claimsResolver.apply(claims);
-    }
-
-    public Boolean validateToken(String token, UserDetails userDetails) {
-        final String username = extractUsername(token);
-        return (username.equals(userDetails.getUsername()) && !isTokenExpired(token));
     }
 
     public AuthResponse generateToken(String userName) {
@@ -75,15 +75,6 @@ public class JwtServiceImpl implements JwtService {
         return null;
     }
 
-    public Claims getAllClaims(String token) {
-        return Jwts
-                .parserBuilder()
-                .setSigningKey(getSignKey())  // SECRETE HS256
-                .build()
-                .parseClaimsJws(token)
-                .getBody();
-    }
-
     public boolean isBearer(HttpServletRequest request){
         String tokenHeader = request.getHeader(AUTHORIZATION);
         if(tokenHeader != null){
@@ -102,12 +93,12 @@ public class JwtServiceImpl implements JwtService {
                 .setClaims(claims)
                 .setSubject(userName)
                 .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis()+1000*60*30))
+                .setExpiration(new Date(System.currentTimeMillis()+jwtProperties.getExpiration()))
                 .signWith(getSignKey(), SignatureAlgorithm.HS256).compact();
     }
 
     private Key getSignKey() {
-        byte[] keyBytes= Decoders.BASE64.decode(SECRET);
+        byte[] keyBytes= Decoders.BASE64.decode(jwtProperties.getSecret());
         return Keys.hmacShaKeyFor(keyBytes);
     }
 

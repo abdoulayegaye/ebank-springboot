@@ -4,26 +4,28 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import sn.xoslu.tech.ebank.dtos.ApiResponse;
 import sn.xoslu.tech.ebank.dtos.CustomerDTO;
 import sn.xoslu.tech.ebank.services.CustomerService;
+import sn.xoslu.tech.ebank.utils.PageResponse;
 
 import java.util.List;
 
+import static sn.xoslu.tech.ebank.abilities.CustomerAbility.*;
+
 @RestController
-@RequestMapping("/customers")
+@RequestMapping(_PATH)
 @RequiredArgsConstructor
-@Tag(name = "Gestion des clients", description = "Donne toutes les opérations qui sont liées á la gestion des clients")
+@Tag(name = _ABILITY_TITLE, description = _ABILITY_DESCRIPTION)
 public class CustomerController {
+
     private final CustomerService customerService;
 
     @PostMapping
-    @Operation(description = "Créer client", summary = "Créer client")
+    @Operation(description = _ABILITY_CREATE, summary = _ABILITY_CREATE)
     public ResponseEntity<ApiResponse<CustomerDTO>> create(@RequestBody @Valid CustomerDTO customer) {
         return ResponseEntity
                 .status(HttpStatus.CREATED)
@@ -35,7 +37,7 @@ public class CustomerController {
     }
 
     @GetMapping("/{id}")
-    @Operation(description = "Récupérer client via ID", summary = "Récupérer client")
+    @Operation(description = _ABILITY_GET_BY_ID, summary = _ABILITY_GET_BY_ID)
     public ResponseEntity<ApiResponse<CustomerDTO>> getById(@PathVariable Long id) {
         return ResponseEntity
                 .status(HttpStatus.OK)
@@ -46,25 +48,8 @@ public class CustomerController {
                 ));
     }
 
-    @GetMapping("/pagined")
-    @Operation(description = "Liste paginée de tous les clients", summary = "Lister tous les clients")
-    public ResponseEntity<ApiResponse<Page<CustomerDTO>>> getAllPagined(
-            @RequestParam(defaultValue = "1") int page,
-            @RequestParam(defaultValue = "10") int size,
-            @RequestParam(defaultValue = "name") String sortBy,
-            @RequestParam(defaultValue = "asc") String sortDir
-    ) {
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(new ApiResponse<>(
-                        HttpStatus.OK.value(),
-                        "Liste des clients trouvés avec succès.",
-                        customerService.getAllCustomersPagined(page, size, sortBy, sortDir)
-                ));
-    }
-
     @GetMapping
-    @Operation(description = "Lister tous les clients", summary = "Lister tous les clients")
+    @Operation(description = _ABILITY_GET_ALL, summary = _ABILITY_GET_ALL)
     //@PreAuthorize("hasRole('USER')")
     //@PreAuthorize("hasAuthority('ROLE_USER')")
     public ResponseEntity<ApiResponse<List<CustomerDTO>>> getAll() {
@@ -78,7 +63,7 @@ public class CustomerController {
     }
 
     @PutMapping("/{id}")
-    @Operation(description = "Modifier client", summary = "Modifier client")
+    @Operation(description = _ABILITY_UPDATE, summary = _ABILITY_UPDATE)
     public ResponseEntity<ApiResponse<CustomerDTO>> update(
             @PathVariable Long id,
             @RequestBody CustomerDTO customer) {
@@ -93,7 +78,7 @@ public class CustomerController {
     }
 
     @DeleteMapping("/{id}")
-    @Operation(description = "Supprimer client", summary = "Supprimer client")
+    @Operation(description = _ABILITY_DELETE, summary = _ABILITY_DELETE)
     public ResponseEntity<ApiResponse<CustomerDTO>> delete(@PathVariable Long id) {
         customerService.deleteCustomer(id);
         return ResponseEntity
@@ -106,7 +91,7 @@ public class CustomerController {
     }
 
     @GetMapping("/check-email")
-    @Operation(description = "Vérifier si email existe", summary = "Vérifier si email existe")
+    @Operation(description = _ABILITY_EMAIL_EXISTS, summary = _ABILITY_EMAIL_EXISTS)
     public ResponseEntity<ApiResponse<?>> checkEmail(@RequestParam String email) {
         boolean exists = customerService.emailExists(email);
         return ResponseEntity
@@ -119,17 +104,23 @@ public class CustomerController {
     }
 
     @GetMapping("/search")
-    @Operation(description = "Rechercher client via un parametre", summary = "Rechercher client via un parametre")
-    public ResponseEntity<ApiResponse<List<CustomerDTO>>> search(
-            @RequestParam(value = "q", defaultValue = "") String query
+    @Operation(description = _ABILITY_SEARCH_WITH_PAGINATION, summary = _ABILITY_SEARCH_WITH_PAGINATION)
+    public ResponseEntity<ApiResponse<PageResponse<CustomerDTO>>> getAllCustomers(
+            @RequestParam(value = "q", defaultValue = "")    String query,
+            @RequestParam(defaultValue = "0")   int page,
+            @RequestParam(defaultValue = "10")  int size,
+            @RequestParam(defaultValue = "id")  String sortBy,
+            @RequestParam(defaultValue = "asc") String sortDir
     ) {
-        List<CustomerDTO> results = customerService.search(query);
-        return ResponseEntity
-                .status(HttpStatus.OK)
-                .body(new ApiResponse<>(
+        PageResponse<CustomerDTO> results =
+                customerService.searchWithPagination(query, page, size, sortBy, sortDir);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
                         HttpStatus.OK.value(),
-                        "Liste des clients trouvés avec succès.",
+                        (results.getTotalPages() > 0) ? "Liste des clients trouvés avec succès." : "Aucun client trouvé.",
                         results
-                ));
+                )
+        );
     }
 }

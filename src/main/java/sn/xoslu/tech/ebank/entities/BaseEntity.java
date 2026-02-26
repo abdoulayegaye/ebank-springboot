@@ -14,11 +14,10 @@ import java.time.Instant;
 @Setter
 public class BaseEntity {
 
-    @Column(name = "created_at")
     @CreationTimestamp
+    @Column(name = "created_at")
     private Instant createdAt = Instant.now();
 
-    @Temporal(TemporalType.TIMESTAMP)
     @UpdateTimestamp
     @Column(name = "updated_at")
     private Instant updatedAt = Instant.now();

@@ -1,7 +1,5 @@
 package sn.xoslu.tech.ebank.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -21,7 +19,8 @@ public class Customer extends BaseEntity {
     private Long id;
     private String name;
     private String email;
-    private boolean state;
+    @Column(columnDefinition = "boolean default true")
+    private boolean state = true;
     @OneToMany(mappedBy = "customer")
     private List<Account> accounts;
 }

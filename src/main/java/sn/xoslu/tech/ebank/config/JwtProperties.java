@@ -12,7 +12,7 @@ import org.springframework.validation.annotation.Validated;
 
 @ConfigurationProperties(prefix = "app.jwt")
 @Component
-@Validated  // active la validation
+@Validated
 @Getter
 @Setter
 @AllArgsConstructor

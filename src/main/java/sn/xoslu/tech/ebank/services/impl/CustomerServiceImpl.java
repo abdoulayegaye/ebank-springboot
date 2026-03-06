@@ -1,5 +1,6 @@
 package sn.xoslu.tech.ebank.services.impl;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -7,6 +8,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import sn.xoslu.tech.ebank.dtos.CustomerDTO;
 import sn.xoslu.tech.ebank.entities.Customer;
+import sn.xoslu.tech.ebank.exceptions.BadRequestException;
 import sn.xoslu.tech.ebank.exceptions.ConflictException;
 import sn.xoslu.tech.ebank.exceptions.NotFoundException;
 import sn.xoslu.tech.ebank.mappers.CustomerMapper;
@@ -17,6 +19,7 @@ import sn.xoslu.tech.ebank.utils.Tools;
 
 import java.util.List;
 
+@Slf4j
 @Service
 public class CustomerServiceImpl implements CustomerService {
 
@@ -30,6 +33,13 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDTO createCustomer(CustomerDTO customer) {
+        log.info("createCustomer() : {}", customer);
+        if (customer.getName() == null || customer.getName().trim().isEmpty()){
+            throw new BadRequestException("Le champ nom est obligatoire");
+        }
+        if (customer.getEmail() == null || customer.getEmail().trim().isEmpty()){
+            throw new BadRequestException("Le champ email est obligatoire");
+        }
         if (customerRepository.existsByEmail(customer.getEmail())) {
             throw new ConflictException("Un client avec cet email existe déjà");
         }

@@ -15,5 +15,5 @@ public interface JwtService {
      AuthResponse generateToken(String userName);
      String getToken(HttpServletRequest request);
      boolean isBearer(HttpServletRequest request);
-     boolean isTokenValid(String token,UserDetails userDetails);
+     boolean isTokenValid(String token, UserDetails userDetails);
 }

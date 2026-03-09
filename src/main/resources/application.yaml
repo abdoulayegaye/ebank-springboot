@@ -3,10 +3,10 @@ spring:
     name: ebank
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ebank_db
-    username: root
-    password:
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:postgresql://localhost:5433/ebank_db
+    username: postgres
+    password: passer
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -17,25 +17,25 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    database: mysql
-    database-platform: org.hibernate.dialect.MySQL8Dialect
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
 
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: ebank-client
-            client-secret: 8bal2MonsBJaSCyoeA5vULy7xPzelh41
-            scope: openid, profile, email
-            authorization-grant-type: authorization_code
-        provider:
-          keycloak:
-            issuer-uri: http://localhost:8082/realms/ebank-realm
-            user-name-attribute: preferred_username
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8082/realms/ebank-realm
+#  security:
+#    oauth2:
+#      client:
+#        registration:
+#          keycloak:
+#            client-id: ebank-client
+#            client-secret: 8bal2MonsBJaSCyoeA5vULy7xPzelh41
+#            scope: openid, profile, email
+#            authorization-grant-type: authorization_code
+#        provider:
+#          keycloak:
+#            issuer-uri: http://localhost:8082/realms/ebank-realm
+#            user-name-attribute: preferred_username
+#      resourceserver:
+#        jwt:
+#          issuer-uri: http://localhost:8082/realms/ebank-realm
 
 server:
   port: 8080
@@ -53,3 +53,4 @@ app:
   jwt:
     secret: ${JWT_SECRET:YS1zdHJpbmctc2VjcmV0LWF0LWxlYXN0LTI1Ni1iaXRzLWxvbmc=}
     expiration: ${JWT_EXPIRATION:1800000}  # 30 minutes par défaut (1000*60*30)
+

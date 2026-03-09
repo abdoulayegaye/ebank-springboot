@@ -25,19 +25,19 @@ public class User extends BaseEntity {
     private String email;
     private String phone;
     private String username;
-    @Column(name = "is_admin", columnDefinition = "bit not null default 0")
+    @Column(name = "is_admin")
     private boolean isAdmin = false;
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
-    @Column(name = "is_enabled", columnDefinition = "bit not null default 0")
+    @Column(name = "is_enabled")
     private boolean isEnabled = true;
-    @Column(name = "account_is_enabled", columnDefinition = "bit not null default 1")
+    @Column(name = "account_is_enabled")
     private boolean accountIsEnabled = true ;
-    @Column(name = "account_is_not_expired", columnDefinition = "bit not null default 1")
+    @Column(name = "account_is_not_expired")
     private boolean accountIsNotExpired = true;
-    @Column(name = "account_is_not_locked", columnDefinition = "bit not null default 1")
+    @Column(name = "account_is_not_locked")
     private boolean accountIsNotLocked = true;
-    @Column(name = "credential_not_expired", columnDefinition = "bit not null default 1")
+    @Column(name = "credential_not_expired")
     private boolean credentialNotExpired = true;
     @ManyToOne(fetch = FetchType.EAGER)
     private Role role;

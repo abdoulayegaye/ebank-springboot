@@ -1,5 +1,6 @@
 services:
 
+  # ── Base de données App ──────────────────────────────────────
   mysql:
     image: mysql:8.0
     container_name: ebank-mysql
@@ -31,8 +32,49 @@ services:
       mysql:
         condition: service_healthy
 
+  # ── Base de données Keycloak ─────────────────────────────────
+  postgres:
+    image: postgres:16
+    container_name: ebank-postgres
+    environment:
+      POSTGRES_DB: keycloak_db
+      POSTGRES_USER: keycloak_user
+      POSTGRES_PASSWORD: keycloak_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak_user -d keycloak_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Keycloak ─────────────────────────────────────────────────
+  keycloak:
+    image: keycloak/keycloak:26.0
+    container_name: keycloak
+    command: start-dev
+    environment:
+      KEYCLOAK_ADMIN: admin
+      KEYCLOAK_ADMIN_PASSWORD: admin
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgres:5432/keycloak_db
+      KC_DB_USERNAME: keycloak_user
+      KC_DB_PASSWORD: keycloak_pass
+      KC_HOSTNAME: localhost
+      KC_HOSTNAME_PORT: 8180
+      KC_HOSTNAME_STRICT: false
+      KC_HTTP_ENABLED: true
+    ports:
+      - "8180:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Application Spring Boot ───────────────────────────────────
   app:
-    image: layegaye/ebank:1.0.0  # ← utilise l'image Docker Hub au lieu de build
+    image: layegaye/ebank:1.0.0
     container_name: ebank-app
     ports:
       - "8088:8080"
@@ -41,9 +83,20 @@ services:
       SPRING_DATASOURCE_USERNAME: ebank
       SPRING_DATASOURCE_PASSWORD: ebank123
       SPRING_JPA_HIBERNATE_DDL_AUTO: update
+      # Keycloak issuer pour valider les tokens JWT
+      SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/mon-app
     depends_on:
       mysql:
         condition: service_healthy
+      keycloak:
+        condition: service_started
 
 volumes:
   mysql_data:
+  postgres_data:
+  keycloak_data:
+
+
+## 🗂️ Architecture des données
+# MySQL (3307)      → ton application ebank (users, transactions, etc.)
+# PostgreSQL (5432) → Keycloak uniquement (sessions, realms, clients, etc.)

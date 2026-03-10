@@ -2,6 +2,7 @@ package sn.xoslu.tech.ebank.config;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -12,28 +13,33 @@ import org.springframework.security.config.annotation.method.configuration.Enabl
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.jwt.NimbusJwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
+import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
-import sn.xoslu.tech.ebank.filters.JwtAuthFilter;
+//import sn.xoslu.tech.ebank.filters.JwtAuthFilter;
 import sn.xoslu.tech.ebank.services.impl.UserInfoUserDetailsService;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity(securedEnabled = true)
-@RequiredArgsConstructor
 @Slf4j
 public class SecurityConfig {
-
-    private final JwtAuthFilter authFilter;
 
     private static final String[] AUTHORIZED_WHITELIST = {
             "/swagger-ui/**",
@@ -41,73 +47,69 @@ public class SecurityConfig {
             "/v3/api-docs/**",
             "/swagger-resources/**",
             "/webjars/**",
-            "/authenticate"
+            "/authenticate/**",
     };
 
-    /*
-    * Sans lui, Spring Security utilise par défaut NoOpPasswordEncoder (mot de passe en clair),
-    * ce qui est dangereux en production. Dès que tu stockes des mots de passe, il te le faut.
-    * */
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
-    }
+    @Value("${keycloak.auth-server-url}")
+    private String authServerUrl;
 
-    /*
-    * Obligatoire si tu veux que Spring Security charge tes utilisateurs depuis ta propre source (BDD, etc.)
-    * */
+    @Value("${keycloak.realm}")
+    private String realm;
+
     @Bean
-    public UserDetailsService userDetailsService() {
-        return new UserInfoUserDetailsService();
+    public JwtDecoder jwtDecoder() {
+        String jwkSetUri = authServerUrl + "/realms/" + realm + "/protocol/openid-connect/certs";
+        return NimbusJwtDecoder.withJwkSetUri(jwkSetUri).build();
     }
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
-                /*
-                * Configure le Cross-Origin Resource Sharing. Cela bloque les requêtes venant d'un autre domaine
-                * (ex: ton frontend React sur localhost:3000 qui appelle ton API sur localhost:8080).
-                * Sans ça, le navigateur bloque les requêtes cross-origin.
-                * */
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-                /*
-                * Désactive la protection CSRF (Cross-Site Request Forgery).
-                * C'est normal et correct dans une API REST avec JWT,
-                * car le CSRF ne concerne que les sessions avec cookies.
-                * Avec des tokens Bearer dans les headers, tu n'as pas ce risque.
-                * */
                 .csrf(csrf -> csrf.disable())
-                /*
-                * Définit qui peut accéder à quoi
-                * */
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers(AUTHORIZED_WHITELIST).permitAll() // Ces routes sont publiques (login, register, etc.)
-                        .anyRequest().authenticated() // Tout le reste nécessite d'être connecté
+                        .requestMatchers(AUTHORIZED_WHITELIST).permitAll()
+                        .anyRequest().authenticated()
                 )
-                /*
-                * Indique à Spring Security de ne pas créer de session HTTP.
-                * Chaque requête doit s'authentifier par elle-même via le token JWT dans le header.
-                 * */
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                /*
-                * Branche ton `AuthenticationProvider` (le `DaoAuthenticationProvider` configuré
-                * avec ton `UserDetailsService` et ton `PasswordEncoder`) pour que Spring sache comment
-                * vérifier les credentials.
-                * */
-                .authenticationProvider(authenticationProvider())
-                /*
-                * Insère ton filtre JWT (`authFilter`) dans la chaîne,
-                * avant le filtre d'authentification par défaut de Spring.
-                *
-                * Concrètement, à chaque requête ton `authFilter` va :
-                * 1. Extraire le token JWT du header `Authorization`
-                * 2. Le valider
-                * 3. Charger l'utilisateur et mettre son authentification dans le `SecurityContext`
-                * */
-                .addFilterBefore(authFilter, UsernamePasswordAuthenticationFilter.class)
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(jwt -> jwt
+                                .decoder(jwtDecoder())
+                                .jwtAuthenticationConverter(jwtAuthConverter()))
+                )
                 .build();
+    }
+
+    @Bean
+    public JwtAuthenticationConverter jwtAuthConverter() {
+        JwtAuthenticationConverter jwtConverter = new JwtAuthenticationConverter();
+
+        jwtConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
+            List<GrantedAuthority> authorities = new ArrayList<>();
+
+            // ✅ Récupère les rôles depuis resource_access.ebank-client.roles
+            Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
+            if (resourceAccess != null) {
+                Map<String, Object> ebankClient = (Map<String, Object>) resourceAccess.get("ebank-client");
+                if (ebankClient != null) {
+                    List<String> roles = (List<String>) ebankClient.get("roles");
+                    if (roles != null) {
+                        roles.stream()
+                                .map(role -> new SimpleGrantedAuthority("ROLE_" + role))
+                                .forEach(authorities::add);
+                    }
+                }
+            }
+
+            return authorities;
+        });
+
+        // ✅ Récupère le username depuis preferred_username
+        jwtConverter.setPrincipalClaimName("preferred_username");
+
+        return jwtConverter;
     }
 
     @Bean
@@ -123,33 +125,4 @@ public class SecurityConfig {
         source.registerCorsConfiguration("/**", config);
         return source;
     }
-
-    @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider authenticationProvider=new DaoAuthenticationProvider();
-        authenticationProvider.setUserDetailsService(userDetailsService());
-        authenticationProvider.setPasswordEncoder(passwordEncoder());
-        return authenticationProvider;
-    }
-
-    /*
-    * Tu en as besoin seulement si tu gères toi-même l'authentification dans un contrôleur ou un filtre
-    * */
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
-
-    /*
-    * ## 🔄 Vue d'ensemble du flux
-        Requête HTTP entrante
-            ↓
-       Filtre CORS        → autorise/bloque selon l'origine
-            ↓
-       authFilter (JWT)   → valide le token, authentifie l'utilisateur
-            ↓
-       Authorization      → whitelist ? → OK | sinon → authentifié ?
-            ↓
-       Controller         → traitement de la requête
-    * */
 }

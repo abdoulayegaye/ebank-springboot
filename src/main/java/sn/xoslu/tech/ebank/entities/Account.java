@@ -19,8 +19,7 @@ public class Account extends BaseEntity {
     private Long id;
     private String numero;
     private double balance;
-    @Column(columnDefinition = "varchar(10) default 'XOF'")
-    private String currency = "XOF";
+    private String currency;
     private boolean active;
     @ManyToOne
     private Customer customer;

@@ -20,22 +20,18 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
-  security:
-    oauth2:
-      client:
-        registration:
-          keycloak:
-            client-id: ebank-client
-            client-secret: 8bal2MonsBJaSCyoeA5vULy7xPzelh41
-            scope: openid, profile, email
-            authorization-grant-type: authorization_code
-        provider:
-          keycloak:
-            issuer-uri: http://localhost:8082/realms/ebank-realm
-            user-name-attribute: preferred_username
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8082/realms/ebank-realm
+  spring:
+    security:
+      oauth2:
+        resourceserver:
+          jwt:
+            issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+
+keycloak:
+  auth-server-url: http://localhost:8180
+  realm: ebank-realm
+  client-id: ebank-client
+  client-secret: UTltiZwYTYRgy7PPkPaSD79RoSb2OPQf
 
 server:
   port: 8080
@@ -53,3 +49,14 @@ app:
   jwt:
     secret: ${JWT_SECRET:YS1zdHJpbmctc2VjcmV0LWF0LWxlYXN0LTI1Ni1iaXRzLWxvbmc=}
     expiration: ${JWT_EXPIRATION:1800000}  # 30 minutes par défaut (1000*60*30)
+
+logging:
+  level:
+    sn.xoslu.tech.ebank.feign: DEBUG  # ← remplace par ton package
+    feign: DEBUG
+
+feign:
+  client:
+    config:
+      keycloak-client:
+        loggerLevel: FULL

@@ -1,14 +1,12 @@
 package sn.xoslu.tech.ebank.dtos;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@Builder
 public class AuthResponse {
     private String token;
     private UserDTO user;

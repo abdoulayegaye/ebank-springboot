@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Builder;
 import lombok.Data;
+import sn.xoslu.tech.ebank.dtos.UserDTO;
 
 import java.util.List;
 
@@ -28,4 +29,5 @@ public class KeycloakTokenResponse {
     @JsonProperty("token_type")
     private String tokenType;
 
+    private UserDTO user;
 }

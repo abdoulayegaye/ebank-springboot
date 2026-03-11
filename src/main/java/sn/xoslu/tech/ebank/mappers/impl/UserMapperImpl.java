@@ -11,7 +11,7 @@ public class UserMapperImpl implements UserMapper {
     public UserDTO toDTO(User user) {
         if (user == null) return null;
         UserDTO dto = new UserDTO();
-        dto.setId(user.getId());
+        dto.setId(String.valueOf(user.getId()));
         dto.setUsername(user.getUsername());
         dto.setLastname(user.getLastname());
         dto.setFirstname(user.getFirstname());
@@ -24,7 +24,7 @@ public class UserMapperImpl implements UserMapper {
     public User toEntity(UserDTO dto) {
         if (dto == null) return null;
         User user = new User();
-        user.setId(dto.getId());
+        user.setId(Long.parseLong(dto.getId()));
         user.setUsername(dto.getUsername());
         user.setLastname(dto.getLastname());
         user.setFirstname(dto.getFirstname());

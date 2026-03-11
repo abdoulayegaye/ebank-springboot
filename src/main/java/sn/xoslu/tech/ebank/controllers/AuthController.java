@@ -27,7 +27,7 @@ public class AuthController {
         return authentication;
     }
 
-    @PostMapping("/keycloak")
+    @PostMapping
     @Operation(summary = "Authentification", description = "Authentification")
     public KeycloakTokenResponse authenticateByKeycloak(@RequestBody AuthRequest authRequest) {
         log.info("Authenticating with Keycloak");

@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import sn.xoslu.tech.ebank.dtos.AuthResponse;
+import sn.xoslu.tech.ebank.dtos.UserDTO;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -44,6 +45,14 @@ public class KeycloakAuthService {
         String extractedUsername = (String) claims.get("preferred_username");
         List<String> roles = extractRoles(claims);
 
+        UserDTO userDTO = new UserDTO();
+        userDTO.setId((String) claims.get("sub"));
+        userDTO.setUsername(extractedUsername);
+        userDTO.setFirstname((String) claims.get("given_name"));
+        userDTO.setLastname((String) claims.get("family_name"));
+        userDTO.setEmail((String) claims.get("email"));
+        userDTO.setPhone("771800510");
+
         // 4. Retourne tout
         return KeycloakTokenResponse.builder()
                 .accessToken(accessToken)
@@ -51,6 +60,7 @@ public class KeycloakAuthService {
                 .username(extractedUsername)
                 .roles(roles)
                 .tokenType("Bearer")
+                .user(userDTO)
                 .build();
     }
 

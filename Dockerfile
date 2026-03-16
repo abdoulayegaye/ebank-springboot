@@ -1,28 +1,61 @@
-# ── Stage 1 : Build ──────────────────────────────────────
-FROM maven:3.9.6-eclipse-temurin-21 AS builder
+# ═══════════════════════════════════════════════════════════════
+# Stage 1 — Dependency Cache
+# Télécharge les dépendances Maven séparément pour profiter
+# du cache Docker (rebuild rapide si seul le code change)
+#   docker compose build app
+#   docker images | grep ebank
+#   docker compose up -d app
+#   docker compose logs -f app
+#   docker login
+#   docker push layegaye/ebank:1.0.0
+# ═══════════════════════════════════════════════════════════════
+FROM maven:3.9-amazoncorretto-21-alpine AS dependencies
 
-WORKDIR /ebank-app
+WORKDIR /app
 
-# Copie pom.xml en premier pour profiter du cache Docker
 COPY pom.xml .
-RUN mvn dependency:go-offline -q
+RUN mvn dependency:go-offline -B --no-transfer-progress
 
-# Copie le source et build
-COPY src ./src
-RUN mvn clean package -DskipTests -q
 
-# ── Stage 2 : Run ────────────────────────────────────────
-FROM eclipse-temurin:21-jre-alpine
+# ═══════════════════════════════════════════════════════════════
+# Stage 2 — Build
+# Compile et package le JAR depuis les sources
+# ═══════════════════════════════════════════════════════════════
+FROM dependencies AS builder
 
-WORKDIR /ebank-app
+COPY src/ ./src/
+RUN mvn clean package -DskipTests -B --no-transfer-progress
 
-# Utilisateur non-root pour la sécurité
-RUN addgroup -S ebank && adduser -S ebank -G ebank
-USER ebank
 
-# Copie uniquement le jar depuis le stage builder
-COPY --from=builder /ebank-app/target/ebank-0.0.1-SNAPSHOT.jar ebank-app.jar
+# ═══════════════════════════════════════════════════════════════
+# Stage 3 — Runtime
+# Image finale légère, sans Maven ni sources
+# ═══════════════════════════════════════════════════════════════
+FROM amazoncorretto:21-alpine AS runtime
 
+LABEL maintainer="banking-app"
+LABEL description="Banking Application - Spring Boot"
+LABEL version="1.0.0"
+
+# ── Sécurité : utilisateur non-root ──────────────────────────
+RUN addgroup -S bankinggroup && adduser -S bankinguser -G bankinggroup
+
+WORKDIR /app
+
+# ── JAR depuis le stage builder ───────────────────────────────
+COPY --from=builder /app/target/*.jar app.jar
+
+# ── Variables d'environnement (surchargeables via docker-compose)
+ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=75.0"
+ENV SPRING_PROFILES_ACTIVE=docker
+
+# ── Port exposé ───────────────────────────────────────────────
 EXPOSE 8088
 
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# ── Healthcheck via Spring Actuator ───────────────────────────
+HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \
+    CMD wget --no-verbose --tries=1 --spider http://localhost:8081/actuator/health || exit 1
+
+# ── Lancement ─────────────────────────────────────────────────
+USER bankinguser
+ENTRYPOINT ["sh", "-c", "java $JAVA_OPTS -jar app.jar"]

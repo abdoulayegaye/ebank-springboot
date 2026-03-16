@@ -65,6 +65,10 @@ public class OpenApiConfig {
                                 .description("Local DEV Server"),
 
                         new Server()
+                                .url("http://localhost:8088/api/v1")
+                                .description("Docker Local"),
+
+                        new Server()
                                 .url("https://api.banking.com")
                                 .description("Production Server")
 

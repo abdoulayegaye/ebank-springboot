@@ -3,9 +3,9 @@ spring:
     name: ebank
 
   datasource:
-    url: jdbc:mysql://localhost:3306/ebank_db
-    username: root
-    password:
+    url: ${SPRING_DATASOURCE_URL:jdbc:mysql://localhost:3306/ebank_db}
+    username: ${SPRING_DATASOURCE_USERNAME:root}
+    password: ${SPRING_DATASOURCE_PASSWORD:}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -20,21 +20,21 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQL8Dialect
 
-  spring:
-    security:
-      oauth2:
-        resourceserver:
-          jwt:
-            issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: ${keycloak.auth-server-url}/realms/${keycloak.realm}
 
 keycloak:
-  auth-server-url: http://localhost:8180
-  realm: ebank-realm
-  client-id: ebank-client
-  client-secret: UTltiZwYTYRgy7PPkPaSD79RoSb2OPQf
+  auth-server-url: ${KEYCLOAK_AUTH_SERVER_URL:http://localhost:8180}
+  realm: ${KEYCLOAK_REALM:ebank-realm}
+  client-id: ${KEYCLOAK_CLIENT_ID:ebank-client}
+  client-secret: ${KEYCLOAK_CLIENT_SECRET:UTltiZwYTYRgy7PPkPaSD79RoSb2OPQf}
 
 server:
-  port: 8080
+  port: ${SERVER_PORT:8080}
+  forward-headers-strategy: framework
   servlet:
     context-path: /api/v1
 
@@ -44,15 +44,17 @@ springdoc:
   swagger-ui:
     path: /swagger-ui.html
     persist-authorization: true
+    url: /v3/api-docs
+    disable-swagger-default-url: true
 
 app:
   jwt:
     secret: ${JWT_SECRET:YS1zdHJpbmctc2VjcmV0LWF0LWxlYXN0LTI1Ni1iaXRzLWxvbmc=}
-    expiration: ${JWT_EXPIRATION:1800000}  # 30 minutes par défaut (1000*60*30)
+    expiration: ${JWT_EXPIRATION:1800000}
 
 logging:
   level:
-    sn.xoslu.tech.ebank.feign: DEBUG  # ← remplace par ton package
+    sn.xoslu.tech.ebank.feign: DEBUG
     feign: DEBUG
 
 feign:

@@ -1,0 +1,22 @@
+# ─────────────────────────────────────────
+# phpMyAdmin Service — MySQL GUI
+# ─────────────────────────────────────────
+services:
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: ebank-phpmyadmin
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    ports:
+      - "8089:80"
+    networks:
+      - ebank-network
+    depends_on:
+      mysql:
+        condition: service_healthy
+
+networks:
+  ebank-network:
+    external: true

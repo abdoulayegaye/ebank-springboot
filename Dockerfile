@@ -10,9 +10,7 @@
 #   docker push layegaye/ebank:1.0.0
 # ═══════════════════════════════════════════════════════════════
 FROM maven:3.9-amazoncorretto-21-alpine AS dependencies
-
 WORKDIR /app
-
 COPY pom.xml .
 RUN mvn dependency:go-offline -B --no-transfer-progress
 
@@ -22,7 +20,6 @@ RUN mvn dependency:go-offline -B --no-transfer-progress
 # Compile et package le JAR depuis les sources
 # ═══════════════════════════════════════════════════════════════
 FROM dependencies AS builder
-
 COPY src/ ./src/
 RUN mvn clean package -DskipTests -B --no-transfer-progress
 
@@ -50,7 +47,7 @@ ENV JAVA_OPTS="-Xms256m -Xmx512m -XX:+UseContainerSupport -XX:MaxRAMPercentage=7
 ENV SPRING_PROFILES_ACTIVE=docker
 
 # ── Port exposé ───────────────────────────────────────────────
-EXPOSE 8088
+EXPOSE 8080
 
 # ── Healthcheck via Spring Actuator ───────────────────────────
 HEALTHCHECK --interval=30s --timeout=10s --start-period=60s --retries=3 \

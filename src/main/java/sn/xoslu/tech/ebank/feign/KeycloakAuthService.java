@@ -27,6 +27,8 @@ public class KeycloakAuthService {
 
     public KeycloakTokenResponse authenticate(String username, String password) throws JsonProcessingException {
 
+        log.info("Client ID: {}", keycloakProperties.getClientId());
+        log.info("Client SECRET: {}", keycloakProperties.getClientSecret());
         // 1. Récupère le token depuis Keycloak
         MultiValueMap<String, String> formParams = new LinkedMultiValueMap<>();
         formParams.add("grant_type", "password");

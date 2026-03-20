@@ -3,13 +3,18 @@ package sn.xoslu.tech.ebank.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
+import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import sn.xoslu.tech.ebank.dtos.ApiResponse;
 import sn.xoslu.tech.ebank.dtos.OperationDTO;
+import sn.xoslu.tech.ebank.services.BankStatementService;
 import sn.xoslu.tech.ebank.services.OperationService;
 
+import java.time.LocalDate;
 import java.util.List;
 
 @RestController
@@ -19,6 +24,7 @@ import java.util.List;
 public class OperationController {
 
     private final OperationService operationService;
+    private final BankStatementService bankStatementService;
 
     @PostMapping("/deposit")
     @Operation(summary = "Dépot", description = "Dépot")
@@ -84,6 +90,22 @@ public class OperationController {
                         operationService.getAccountOperations(accountNumber)
                 )
         );
+    }
+
+    @GetMapping("/{accountNumber}/statement")
+    @Operation(summary = "Relevé bancaire PDF", description = "Générer le relevé bancaire d'un compte en PDF")
+    public ResponseEntity<byte[]> getBankStatement(
+            @PathVariable String accountNumber,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate startDate,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate endDate) {
+
+        byte[] pdfBytes = bankStatementService.generateBankStatement(accountNumber, startDate, endDate);
+
+        return ResponseEntity.ok()
+                .contentType(MediaType.APPLICATION_PDF)
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"releve-" + accountNumber + ".pdf\"")
+                .body(pdfBytes);
     }
 }
 
